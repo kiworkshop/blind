@@ -1,0 +1,78 @@
+###
+POST localhost:8080/users
+Content-Type: application/json
+
+{
+  "email": "naruto@namutip.mauel",
+  "password": "naruto1",
+  "name" : "naruto"
+}
+
+###
+GET localhost:8080/users?page=1&size=2
+
+###
+POST localhost:8080/users/login
+Content-Type: application/json
+
+{
+  "email": "naruto@namutip.mauel",
+  "password": "naruto1"
+}
+
+
+### like
+POST localhost:8080/posts/1
+Content-Type: application/json
+
+###
+POST localhost:8080/posts
+Content-Type: application/json
+
+{
+  "title": "hello",
+  "content": "world"
+}
+
+###
+PUT localhost:8080/posts/1
+Content-Type: application/json
+
+{
+  "title": "hello",
+  "content": "revision"
+}
+
+### 포스트 삭제
+DELETE localhost:8080/posts/1
+
+###
+GET localhost:8080/posts/1
+
+###
+GET localhost:8080/posts
+
+###
+POST localhost:8080/posts/1/comments/add
+Content-Type: application/json
+
+{
+  "content": "@comment @123 @유태식@오태식 안녕하세요."
+}
+
+###
+GET localhost:8080/posts/1/comments
+
+###
+PUT localhost:8080/comments/1/edit
+Content-Type: application/json
+
+{
+  "content": "수정되었습니다!!"
+}
+
+###
+POST localhost:8080/users/logout
+
+###
+DELETE localhost:8080/comments/1/delete

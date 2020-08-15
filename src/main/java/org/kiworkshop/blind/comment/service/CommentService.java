@@ -8,6 +8,7 @@ import org.kiworkshop.blind.comment.repository.CommentRepository;
 import org.kiworkshop.blind.comment.util.NameTagExtractor;
 import org.kiworkshop.blind.post.domain.Post;
 import org.kiworkshop.blind.user.domain.User;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,25 +20,25 @@ import java.util.stream.Collectors;
 @Service
 public class CommentService {
 
+    private static final int COMMENT_SIZE = 5;
+
     private final CommentRepository commentRepository;
 
     public CommentResponse create(HttpSession session, Post post, CommentRequest request) {
-        User author = (User) session.getAttribute("LOGIN_USER");
         validateLoginUser(session);
 
         Comment comment = Comment.builder()
                 .content(request.getContent())
-                .author(author)
                 .post(post)
                 .build();
 
         Comment saved = commentRepository.save(comment);
-        return getCommentResponse(saved);
+        return createCommentResponse(saved);
     }
 
     public List<CommentResponse> getAll(Post post) {
         return post.getComments().stream()
-                .map(this::getCommentResponse)
+                .map(this::createCommentResponse)
                 .collect(Collectors.toList());
     }
 
@@ -49,7 +50,7 @@ public class CommentService {
 
         comment.update(request.getContent());
 
-        return getCommentResponse(comment);
+        return createCommentResponse(comment);
     }
 
     public void delete(HttpSession httpSession, Long id) {
@@ -72,21 +73,35 @@ public class CommentService {
 
     private void validateCorrectUser(HttpSession httpSession, Comment comment) {
         User loginUser = (User) httpSession.getAttribute("LOGIN_USER");
-        User author = comment.getAuthor();
+        User author = comment.getCreatedBy();
         if (!(author.getId().equals(loginUser.getId()))) throw new IllegalArgumentException("사용자 권한이 없습니다.");
     }
 
-    private CommentResponse getCommentResponse(Comment comment) {
+    private CommentResponse createCommentResponse(Comment comment) {
         List<String> nameTags = NameTagExtractor.extractNameTags(comment.getContent());
 
         return CommentResponse.builder()
                 .id(comment.getId())
                 .content(comment.getContent())
                 .nameTags(nameTags)
-                .authorName(comment.getAuthor().getName())
+                .authorName(comment.getCreatedBy().getName())
                 .postId(comment.getPost().getId())
-                .createdAt(comment.getCreatedAt())
-                .lastUpdatedAt(comment.getLastUpdatedAt())
+                .createdAt(comment.getCreatedDate())
+                .lastUpdatedAt(comment.getLastModifiedDate())
                 .build();
+    }
+
+    public List<CommentResponse> getTopNComments(Post post) {
+        List<Comment> comments = commentRepository.findAllByPostOrderById(post, PageRequest.of(0, COMMENT_SIZE));
+        return comments.stream()
+                .map(this::createCommentResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<CommentResponse> getAfterIdComments(Post post, Long id) {
+        List<Comment> comments = commentRepository.findAllByPostAndIdGreaterThan(post, id);
+        return comments.stream()
+                .map(this::createCommentResponse)
+                .collect(Collectors.toList());
     }
 }

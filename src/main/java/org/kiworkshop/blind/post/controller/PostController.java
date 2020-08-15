@@ -1,6 +1,10 @@
 package org.kiworkshop.blind.post.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.kiworkshop.blind.comment.controller.dto.CommentRequest;
+import org.kiworkshop.blind.comment.controller.dto.CommentResponse;
+import org.kiworkshop.blind.comment.service.CommentService;
+import org.kiworkshop.blind.post.domain.Post;
 import org.kiworkshop.blind.post.service.PostService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +18,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final CommentService commentService;
 
     @GetMapping
     public ResponseEntity<List<PostResponseDto>> getAll() {
@@ -51,4 +56,27 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/comments/add")
+    public CommentResponse addComment(HttpSession httpSession, @PathVariable Long id, @RequestBody CommentRequest request) {
+        Post post = postService.findById(id);
+        return commentService.create(httpSession, post, request);
+    }
+
+    @GetMapping("/{id}/comments/all")
+    public List<CommentResponse> getAllComments(@PathVariable Long id) {
+        Post post = postService.findById(id);
+        return commentService.getAll(post);
+    }
+
+    @GetMapping("/{id}/comments/partial")
+    public List<CommentResponse> getPartialComments(@PathVariable Long id) {
+        Post post = postService.findById(id);
+        return commentService.getTopNComments(post);
+    }
+
+    @GetMapping("/{id}/comments/rest/{last-index}")
+    public List<CommentResponse> getRestComments(@PathVariable("id") Long id, @PathVariable("last-index") Long lastIndex) {
+        Post post = postService.findById(id);
+        return commentService.getAfterIdComments(post, lastIndex);
+    }
 }
