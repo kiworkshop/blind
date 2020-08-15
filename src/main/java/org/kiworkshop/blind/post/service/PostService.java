@@ -1,20 +1,22 @@
 package org.kiworkshop.blind.post.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpSession;
+
 import org.kiworkshop.blind.like.LikeAction;
 import org.kiworkshop.blind.like.LikeResponse;
-import org.kiworkshop.blind.post.controller.PostRequestDto;
-import org.kiworkshop.blind.post.controller.PostResponseDto;
+import org.kiworkshop.blind.post.controller.dto.request.PostRequestDto;
+import org.kiworkshop.blind.post.controller.dto.response.PostResponseDto;
 import org.kiworkshop.blind.post.domain.Post;
 import org.kiworkshop.blind.post.repository.PostRepository;
 import org.kiworkshop.blind.user.domain.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpSession;
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -30,7 +32,7 @@ public class PostService {
     }
 
     public Long createPost(HttpSession session, PostRequestDto postRequestDto) {
-        User author = (User) session.getAttribute("LOGIN_USER");
+        User author = (User)session.getAttribute("LOGIN_USER");
         Post post = postRequestDto.toEntity(author);
         return postRepository.save(post).getId();
     }
@@ -78,7 +80,7 @@ public class PostService {
 
     @Transactional
     public void likePost(HttpSession httpSession, Long id) {
-        User loginUser = (User) httpSession.getAttribute("LOGIN_USER");
+        User loginUser = (User)httpSession.getAttribute("LOGIN_USER");
         Post post = findById(id);
         post.addLike(loginUser);
     }

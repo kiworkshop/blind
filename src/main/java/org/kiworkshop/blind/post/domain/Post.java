@@ -44,6 +44,7 @@ public class Post {
         Assert.hasLength(content, "content should not be empty");
         this.title = title;
         this.content = content;
+        this.author = author;
     }
 
     public void update(Post postToUpdate) {
@@ -53,6 +54,17 @@ public class Post {
 
     public void addLike(User user) {
         likes.add(new LikeAction(this, user));
+    }
+
+    public int getLikeCount() {
+        return likes.size();
+    }
+
+    public String getTitleSummary() {
+        if (title.length() < 10) {
+            return title;
+        }
+        return title.substring(0, 10);
     }
 }
 

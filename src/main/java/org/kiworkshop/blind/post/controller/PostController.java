@@ -1,6 +1,9 @@
 package org.kiworkshop.blind.post.controller;
 
 import lombok.RequiredArgsConstructor;
+
+import org.kiworkshop.blind.post.controller.dto.request.PostRequestDto;
+import org.kiworkshop.blind.post.controller.dto.response.PostResponseDto;
 import org.kiworkshop.blind.post.service.PostService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,4 +1,4 @@
-package org.kiworkshop.blind.post.controller;
+package org.kiworkshop.blind.post.controller.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
