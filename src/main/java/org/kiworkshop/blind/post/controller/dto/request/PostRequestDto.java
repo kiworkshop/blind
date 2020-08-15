@@ -20,11 +20,10 @@ public class PostRequestDto {
         this.content = content;
     }
 
-    public Post toEntity(User author) {
+    public Post toEntity() {
         return Post.builder()
             .title(title)
             .content(content)
-            .author(author)
             .build();
     }
 }

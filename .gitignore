@@ -32,5 +32,8 @@ out/
 ### VS Code ###
 .vscode/
 
+<<<<<<< HEAD
 .DS_Store
 .idea
+=======
+>>>>>>> dev/comment
