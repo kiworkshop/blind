@@ -81,6 +81,6 @@ public class WatchService {
 
     private Watch findWatchByPostIdAndUserId(Post post, User user) {
         return watchRepository.findByPostAndUser(post, user)
-            .orElseThrow(() -> new WatchException("현재 받아보기 상태가 아닙니다."));
+            .orElseThrow(() -> new EntityNotFoundException("현재 받아보기 상태가 아닙니다."));
     }
 }

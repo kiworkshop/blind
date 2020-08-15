@@ -53,7 +53,7 @@ class WatchServiceTest {
         given(watchRepository.existsByPostAndUser(POST, WATCHER)).willReturn(false);
         given(watchRepository.save(any(Watch.class))).willReturn(WATCH);
 
-        watchService.startWath(POST.getId(), WATCHER.getId());
+        watchService.startWatch(POST.getId(), WATCHER.getId());
 
         verify(watchRepository).save(any(Watch.class));
     }
@@ -64,50 +64,57 @@ class WatchServiceTest {
         given(userRepository.findById(anyLong())).willReturn(Optional.of(WATCHER));
         given(watchRepository.existsByPostAndUser(POST, WATCHER)).willReturn(true);
 
-        assertThatThrownBy(() -> watchService.startWath(POST.getId(), WATCHER.getId()))
+        assertThatThrownBy(() -> watchService.startWatch(POST.getId(), WATCHER.getId()))
             .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    void cancelWatch() {
-        given(watchRepository.findById(anyLong())).willReturn(Optional.of(WATCH));
+    void stopWatch() {
+        given(postRepository.findById(anyLong())).willReturn(Optional.of(POST));
+        given(userRepository.findById(anyLong())).willReturn(Optional.of(WATCHER));
+        given(watchRepository.findByPostAndUser(POST, WATCHER)).willReturn(Optional.of(WATCH));
 
-        watchService.stopWatch(WATCH.getId(), WATCH.getUser().getId());
+        watchService.stopWatch(POST.getId(), WATCHER.getId());
 
-        verify(watchRepository).deleteById(WATCH.getId());
+        verify(watchRepository).delete(WATCH);
     }
 
     @Test
-    void cancelWatchException() {
-        given(watchRepository.findById(anyLong())).willReturn(Optional.of(WATCH));
+    void stopWatchException() {
+        given(postRepository.findById(anyLong())).willReturn(Optional.of(POST));
+        given(userRepository.findById(anyLong())).willReturn(Optional.of(WATCHER));
 
-        assertThatThrownBy(() -> watchService.stopWatch(WATCH.getId(), null))
-            .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> watchService.stopWatch(POST.getId(), WATCHER.getId()))
+            .isInstanceOf(RuntimeException.class);
     }
 
     @Test
     void isWatching() {
-        Watch watch = getWatchFixture();
-        given(watchRepository.findByPostIdAndUserId(POST.getId(), WATCHER.getId())).willReturn(Optional.of(watch));
+        given(postRepository.findById(anyLong())).willReturn(Optional.of(POST));
+        given(userRepository.findById(anyLong())).willReturn(Optional.of(WATCHER));
+        given(watchRepository.existsByPostAndUser(POST, WATCHER)).willReturn(true);
 
         Boolean isWatching = watchService.isWatching(POST.getId(), WATCHER.getId());
 
-        assertThat(isWatching).isEqualTo(true);
+        assertThat(isWatching).isTrue();
     }
 
     @Test
     void isNotWatching() {
-        given(watchRepository.findByPostIdAndUserId(POST.getId(), WATCHER.getId())).willThrow(new EntityNotFoundException());
+        given(postRepository.findById(anyLong())).willReturn(Optional.of(POST));
+        given(userRepository.findById(anyLong())).willReturn(Optional.of(WATCHER));
+        given(watchRepository.existsByPostAndUser(POST, WATCHER)).willReturn(false);
 
         Boolean isWatching = watchService.isWatching(POST.getId(), WATCHER.getId());
 
-        assertThat(isWatching).isEqualTo(false);
+        assertThat(isWatching).isFalse();
     }
 
     @Test
     void getWatchList() {
+        given(userRepository.findById(anyLong())).willReturn(Optional.of(WATCHER));
         List<Watch> watches = Collections.singletonList(WATCH);
-        given(watchRepository.findAllByUserId(anyLong())).willReturn(watches);
+        given(watchRepository.findAllByUser(WATCHER)).willReturn(watches);
 
         List<PostSummaryResponsDto> posts = watchService.getWatchList(WATCHER.getId());
 
@@ -117,8 +124,9 @@ class WatchServiceTest {
 
     @Test
     void getWatcherList() {
+        given(postRepository.findById(anyLong())).willReturn(Optional.of(POST));
         List<Watch> watches = Collections.singletonList(WATCH);
-        given(watchRepository.findAllByPostId(anyLong())).willReturn(watches);
+        given(watchRepository.findAllByPost(POST)).willReturn(watches);
 
         List<UserSummaryResponseDto> users = watchService.getWatchers(POST.getId());
 
