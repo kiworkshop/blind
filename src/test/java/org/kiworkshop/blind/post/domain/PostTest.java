@@ -11,7 +11,6 @@ public class PostTest {
         Post post = Post.builder()
             .title("title")
             .content("content")
-            .author(user)
             .build();
         ReflectionTestUtils.setField(post, "id", 1L);
         return post;

@@ -38,7 +38,6 @@ public class Post extends AuditorEntity {
         Assert.hasLength(content, "content should not be empty");
         this.title = title;
         this.content = content;
-        this.author = author;
     }
 
     public void update(Post postToUpdate) {

@@ -23,20 +23,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .csrf().disable()
             .authorizeRequests()
-                .antMatchers("/login","/users").permitAll()
-                .antMatchers("/admin/**").hasRole("ADMIN")
-                .antMatchers("/member/**").authenticated()
-                .antMatchers("/admin/**").authenticated()
-                .antMatchers("/home").authenticated()
-                .and()
+            .antMatchers("/login").permitAll()
+            .antMatchers("/admin**").hasRole("ADMIN")
+            .antMatchers("/member/**").authenticated()
+            .antMatchers("/home").authenticated()
+            .and()
             .formLogin()
-                .loginPage("/login")
-                .permitAll()
-                .and()
+            .loginPage("/login")
+            .permitAll()
+            .and()
             .logout()
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                .logoutSuccessUrl("/login")
-                .invalidateHttpSession(true);
+            .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+            .logoutSuccessUrl("/login")
+            .invalidateHttpSession(true);
     }
 
     @Bean

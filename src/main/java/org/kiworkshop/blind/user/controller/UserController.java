@@ -9,6 +9,7 @@ import org.kiworkshop.blind.user.domain.User;
 import org.kiworkshop.blind.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -23,6 +24,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
+    @Secured(value = {"ADMIN",})
     public Page<User> getUsers(UserPageRequest userPageRequest) {
         return userService.getUsers(userPageRequest.getPageable());
     }

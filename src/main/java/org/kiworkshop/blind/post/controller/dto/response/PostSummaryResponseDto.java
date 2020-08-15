@@ -26,7 +26,7 @@ public class PostSummaryResponseDto {
         return PostSummaryResponseDto.builder()
             .id(post.getId())
             .title(post.getTitleSummary())
-            .username(post.getAuthor().getName())
+            .username(post.getCreatedBy().getName())
             .likeCount(post.getLikeCount())
             .build();
     }

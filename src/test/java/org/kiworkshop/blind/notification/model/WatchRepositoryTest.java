@@ -42,7 +42,6 @@ class WatchRepositoryTest {
         post = Post.builder()
             .title("title")
             .content("content")
-            .author(author)
             .build();
         postRepository.save(post);
     }
