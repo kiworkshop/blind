@@ -25,7 +25,7 @@ public class WatchController {
 
     @PostMapping
     public ResponseEntity<Void> startWatch(@RequestParam Long postId, @RequestParam Long userId) {
-        Long watchId = watchService.startWath(postId, userId);
+        Long watchId = watchService.startWatch(postId, userId);
         return ResponseEntity
             .created(URI.create("/api/watch/" + watchId))
             .build();
