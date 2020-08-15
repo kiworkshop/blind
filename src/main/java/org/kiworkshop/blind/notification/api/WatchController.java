@@ -4,7 +4,7 @@ import java.net.URI;
 import java.util.List;
 
 import org.kiworkshop.blind.notification.service.WatchService;
-import org.kiworkshop.blind.post.controller.dto.response.PostSummaryResponsDto;
+import org.kiworkshop.blind.post.controller.dto.response.PostSummaryResponseDto;
 import org.kiworkshop.blind.user.controller.dto.UserSummaryResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -44,8 +44,8 @@ public class WatchController {
     }
 
     @GetMapping("/postlist")
-    public ResponseEntity<List<PostSummaryResponsDto>> fetchWatchingList(@RequestParam Long userId) {
-        List<PostSummaryResponsDto> posts = watchService.getWatchList(userId);
+    public ResponseEntity<List<PostSummaryResponseDto>> fetchWatchingList(@RequestParam Long userId) {
+        List<PostSummaryResponseDto> posts = watchService.getWatchList(userId);
         return ResponseEntity.ok(posts);
     }
 

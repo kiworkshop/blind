@@ -5,10 +5,9 @@ import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
 
-import org.kiworkshop.blind.notification.exception.WatchException;
 import org.kiworkshop.blind.notification.model.Watch;
 import org.kiworkshop.blind.notification.model.WatchRepository;
-import org.kiworkshop.blind.post.controller.dto.response.PostSummaryResponsDto;
+import org.kiworkshop.blind.post.controller.dto.response.PostSummaryResponseDto;
 import org.kiworkshop.blind.post.domain.Post;
 import org.kiworkshop.blind.post.repository.PostRepository;
 import org.kiworkshop.blind.user.controller.dto.UserSummaryResponseDto;
@@ -51,12 +50,12 @@ public class WatchService {
         return watchRepository.existsByPostAndUser(post, user);
     }
 
-    public List<PostSummaryResponsDto> getWatchList(Long userId) {
+    public List<PostSummaryResponseDto> getWatchList(Long userId) {
         User user = findUserBy(userId);
         List<Watch> watches = watchRepository.findAllByUser(user);
         return watches.stream()
             .map(Watch::getPost)
-            .map(PostSummaryResponsDto::from)
+            .map(PostSummaryResponseDto::from)
             .collect(Collectors.toList());
     }
 

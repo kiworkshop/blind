@@ -11,14 +11,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import javax.persistence.EntityNotFoundException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kiworkshop.blind.notification.model.Watch;
 import org.kiworkshop.blind.notification.model.WatchRepository;
-import org.kiworkshop.blind.post.controller.dto.response.PostSummaryResponsDto;
+import org.kiworkshop.blind.post.controller.dto.response.PostSummaryResponseDto;
 import org.kiworkshop.blind.post.domain.Post;
 import org.kiworkshop.blind.post.repository.PostRepository;
 import org.kiworkshop.blind.user.controller.dto.UserSummaryResponseDto;
@@ -47,7 +45,7 @@ class WatchServiceTest {
     }
 
     @Test
-    void watch() {
+    void startWatch() {
         given(postRepository.findById(anyLong())).willReturn(Optional.of(POST));
         given(userRepository.findById(anyLong())).willReturn(Optional.of(WATCHER));
         given(watchRepository.existsByPostAndUser(POST, WATCHER)).willReturn(false);
@@ -59,7 +57,7 @@ class WatchServiceTest {
     }
 
     @Test
-    void watchException() {
+    void startWatchException() {
         given(postRepository.findById(anyLong())).willReturn(Optional.of(POST));
         given(userRepository.findById(anyLong())).willReturn(Optional.of(WATCHER));
         given(watchRepository.existsByPostAndUser(POST, WATCHER)).willReturn(true);
@@ -116,7 +114,7 @@ class WatchServiceTest {
         List<Watch> watches = Collections.singletonList(WATCH);
         given(watchRepository.findAllByUser(WATCHER)).willReturn(watches);
 
-        List<PostSummaryResponsDto> posts = watchService.getWatchList(WATCHER.getId());
+        List<PostSummaryResponseDto> posts = watchService.getWatchList(WATCHER.getId());
 
         assertThat(posts).size().isEqualTo(1);
         assertThat(posts.get(0).getId()).isEqualTo(POST.getId());
