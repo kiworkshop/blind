@@ -51,17 +51,4 @@ public class UserController {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
-
-    @PostMapping("/login")
-    public ResponseEntity<Void> login(HttpSession session, @RequestBody LoginRequest loginRequest) {
-        userService.login(session, loginRequest);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpSession session) {
-        userService.logout(session);
-        return ResponseEntity.ok().build();
-    }
-
 }
