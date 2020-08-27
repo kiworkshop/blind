@@ -30,8 +30,10 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user).getId();
     }
 
-    public UserResponseDto readUserBy(Long id) {
-        return UserResponseDto.from(findById(id));
+    public UserResponseDto readUserBy(String username) {
+        User user = userRepository.findByEmail(username)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 id입니다."));
+        return UserResponseDto.from(user);
     }
 
     public void updateById(Long id, UserRequestDto userRequestDto) {
