@@ -1,14 +1,11 @@
 package org.kiworkshop.blind.config;
 
-import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +17,6 @@ import org.kiworkshop.blind.user.domain.User;
 import org.kiworkshop.blind.user.repository.UserRepository;
 import org.kiworkshop.blind.user.service.UserService;
 import org.kiworkshop.blind.user.util.PasswordEncryptor;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -39,7 +35,7 @@ class WebSecurityConfigTest {
     @Autowired
     private WebApplicationContext context;
 
-    @Mock
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -62,7 +58,7 @@ class WebSecurityConfigTest {
     @Test
     @DisplayName("login이 되면 302 response를 받는다")
     public void login_test() throws Exception {
-        when(userRepository.findByEmail("harris")).thenReturn(Optional.of(getUserFixture()));
+        userService.createUser(UserRequestDto.builder().email("harris").password("1234").build());
         mvc.perform(post("/login")
             .with(user("harris").password("1234"))
             .contentType("application/json"))
