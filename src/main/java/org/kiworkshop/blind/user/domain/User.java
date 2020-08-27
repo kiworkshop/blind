@@ -1,20 +1,22 @@
 package org.kiworkshop.blind.user.domain;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @NoArgsConstructor
 @ToString
@@ -61,9 +63,9 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
         if (("admin").equals(this.email)) {
-            authorities.add(new SimpleGrantedAuthority(Role.ADMIN.getValue()));
+            authorities.add(new SimpleGrantedAuthority(Role.ADMIN.getAuthority()));
         } else {
-            authorities.add(new SimpleGrantedAuthority(Role.USER.getValue()));
+            authorities.add(new SimpleGrantedAuthority(Role.USER.getAuthority()));
         }
         return authorities;
     }

@@ -1,8 +1,8 @@
 package org.kiworkshop.blind.config;
 
-import org.kiworkshop.blind.user.domain.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -12,6 +12,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(securedEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) {
@@ -23,19 +24,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .csrf().disable()
             .authorizeRequests()
-            .antMatchers("/login").permitAll()
-            .antMatchers("/admin**").hasRole("ADMIN")
-            .antMatchers("/member/**").authenticated()
-            .antMatchers("/home").authenticated()
-            .and()
+                .antMatchers("/login").permitAll()
+                .antMatchers("/admin**").hasRole("ADMIN")
+                .antMatchers("/member/**").authenticated()
+                .antMatchers("/home").authenticated()
+                .and()
             .formLogin()
-            .loginPage("/login")
-            .permitAll()
-            .and()
+                .loginPage("/login")
+                .permitAll()
+                .and()
             .logout()
-            .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-            .logoutSuccessUrl("/login")
-            .invalidateHttpSession(true);
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessUrl("/login")
+                .invalidateHttpSession(true);
     }
 
     @Bean
