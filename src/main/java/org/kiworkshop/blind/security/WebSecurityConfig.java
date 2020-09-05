@@ -1,6 +1,5 @@
-package org.kiworkshop.blind.config;
+package org.kiworkshop.blind.security;
 
-import org.kiworkshop.blind.user.domain.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,6 +25,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/login").permitAll()
             .antMatchers("/admin**").hasRole("ADMIN")
             .antMatchers("/member/**").authenticated()
+            .antMatchers("/posts/**").authenticated()
             .antMatchers("/home").authenticated()
             .and()
             .formLogin()

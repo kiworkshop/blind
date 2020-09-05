@@ -9,6 +9,7 @@ import org.kiworkshop.blind.post.controller.dto.response.PostResponseDto;
 import org.kiworkshop.blind.post.domain.Post;
 import org.kiworkshop.blind.post.service.PostService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -59,9 +60,9 @@ public class PostController {
     }
 
     @PostMapping("/{id}/comments/add")
-    public CommentResponse addComment(HttpSession httpSession, @PathVariable Long id, @RequestBody CommentRequest request) {
+    public CommentResponse addComment(@PathVariable Long id, @RequestBody CommentRequest request) {
         Post post = postService.findById(id);
-        return commentService.create(httpSession, post, request);
+        return commentService.create(post, request);
     }
 
     @GetMapping("/{id}/comments/all")
