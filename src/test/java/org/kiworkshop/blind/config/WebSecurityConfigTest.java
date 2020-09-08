@@ -1,8 +1,5 @@
 package org.kiworkshop.blind.config;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
-import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -12,15 +9,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.kiworkshop.blind.user.controller.LoginRequest;
 import org.kiworkshop.blind.user.controller.dto.UserRequestDto;
-import org.kiworkshop.blind.user.domain.User;
 import org.kiworkshop.blind.user.repository.UserRepository;
 import org.kiworkshop.blind.user.service.UserService;
-import org.kiworkshop.blind.user.util.PasswordEncryptor;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -28,20 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.http.Cookie;
-import java.util.Optional;
-
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.logout;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
-import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration
@@ -56,6 +39,10 @@ class WebSecurityConfigTest {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    private ObjectMapper mapper;
+
     private MockMvc mvc;
 
     @BeforeEach
@@ -72,44 +59,47 @@ class WebSecurityConfigTest {
     }
 
     @Test
-    @DisplayName("login이 되면 302 response를 받는다")
+    @DisplayName("login이 되면 200 response를 받는다")
     public void login_test() throws Exception {
+        String jsonLoginRequest = mapper.writeValueAsString(getLoginRequestFixture());
         userService.createUser(UserRequestDto.builder().email("harris").password("1234").build());
         mvc.perform(post("/login")
-            .with(user("harris").password("1234"))
-            .contentType("application/json"))
-            .andExpect(status().is(HttpStatus.MOVED_TEMPORARILY.value()));
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jsonLoginRequest)
+        )
+            .andExpect(status().is(HttpStatus.OK.value()));
     }
 
-    private User getUserFixture() {
-        return User.builder()
+    private LoginRequest getLoginRequestFixture() {
+        return LoginRequest.builder()
             .email("harris")
-            .password(PasswordEncryptor.encrypt("1234"))
+            .password("1234")
             .build();
     }
 
     @Test
-    @DisplayName("formLogin으로 로그인 성공 테스트")
-    void formLoginSuccessTest() throws Exception {
-        userService.createUser(UserRequestDto.builder().email("harris").password("1234").build());
-        mvc.perform(formLogin().user("harris").password("1234"))
-                .andExpect(authenticated());
-    }
-
-    @Test
-    @DisplayName("formLogin으로 로그인 실패 테스트")
+    @DisplayName("login 실패시 401을 리턴받는다")
     void formLoginFailTest() throws Exception {
-        userService.createUser(UserRequestDto.builder().email("harris").password("1234").build());
-        mvc.perform(formLogin().user("myang").password("1234"))
-                .andExpect(unauthenticated());
+        String jsonLoginRequest = mapper.writeValueAsString(getLoginRequestFixture());
+        userService.createUser(UserRequestDto.builder().email("harris").password("55").build());
+        mvc.perform(post("/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jsonLoginRequest)
+        )
+            .andExpect(status().is(HttpStatus.UNAUTHORIZED.value()));
     }
 
     @Test
     @DisplayName("logout으로 로그아웃 성공 테스트")
     void formLogoutTest() throws Exception {
+        String jsonLoginRequest = mapper.writeValueAsString(getLoginRequestFixture());
         userService.createUser(UserRequestDto.builder().email("harris").password("1234").build());
-        mvc.perform(formLogin().user("harris").password("1234"))
-                .andExpect(authenticated());
-        mvc.perform(logout("/logout")).andExpect(unauthenticated());
+        mvc.perform(post("/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(jsonLoginRequest)
+        )
+            .andExpect(status().is(HttpStatus.OK.value()));
+        mvc.perform(post("/logout"))
+            .andExpect(status().is(HttpStatus.OK.value()));
     }
 }
