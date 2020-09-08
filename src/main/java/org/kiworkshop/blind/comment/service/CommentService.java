@@ -9,28 +9,29 @@ import org.kiworkshop.blind.comment.util.NameTagExtractor;
 import org.kiworkshop.blind.post.domain.Post;
 import org.kiworkshop.blind.user.domain.User;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class CommentService {
 
     private static final int COMMENT_SIZE = 5;
 
     private final CommentRepository commentRepository;
 
-    public CommentResponse create(HttpSession session, Post post, CommentRequest request) {
-        validateLoginUser(session);
-
+    public CommentResponse create(Post post, CommentRequest request) {
         Comment comment = Comment.builder()
-                .content(request.getContent())
-                .post(post)
-                .build();
+            .content(request.getContent())
+            .post(post)
+            .build();
 
         Comment saved = commentRepository.save(comment);
         return createCommentResponse(saved);
@@ -38,14 +39,13 @@ public class CommentService {
 
     public List<CommentResponse> getAll(Post post) {
         return post.getComments().stream()
-                .map(this::createCommentResponse)
-                .collect(Collectors.toList());
+            .map(this::createCommentResponse)
+            .collect(Collectors.toList());
     }
 
     @Transactional
     public CommentResponse update(HttpSession httpSession, Long id, CommentRequest request) {
         Comment comment = findCommentById(id);
-        validateLoginUser(httpSession);
         validateCorrectUser(httpSession, comment);
 
         comment.update(request.getContent());
@@ -55,7 +55,6 @@ public class CommentService {
 
     public void delete(HttpSession httpSession, Long id) {
         Comment comment = findCommentById(id);
-        validateLoginUser(httpSession);
         validateCorrectUser(httpSession, comment);
 
         commentRepository.delete(comment);
@@ -63,12 +62,7 @@ public class CommentService {
 
     private Comment findCommentById(Long id) {
         return commentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 id의 comment가 존재하지 않습니다. id=" + id));
-    }
-
-    private void validateLoginUser(HttpSession httpSession) {
-        User loginUser = (User) httpSession.getAttribute("LOGIN_USER");
-        if (loginUser == null) throw new IllegalArgumentException("로그인하지 않은 사용자입니다.");
+            .orElseThrow(() -> new IllegalArgumentException("해당 id의 comment가 존재하지 않습니다. id=" + id));
     }
 
     private void validateCorrectUser(HttpSession httpSession, Comment comment) {
@@ -94,14 +88,14 @@ public class CommentService {
     public List<CommentResponse> getTopNComments(Post post) {
         List<Comment> comments = commentRepository.findAllByPostOrderById(post, PageRequest.of(0, COMMENT_SIZE));
         return comments.stream()
-                .map(this::createCommentResponse)
-                .collect(Collectors.toList());
+            .map(this::createCommentResponse)
+            .collect(Collectors.toList());
     }
 
     public List<CommentResponse> getAfterIdComments(Post post, Long id) {
         List<Comment> comments = commentRepository.findAllByPostAndIdGreaterThan(post, id);
         return comments.stream()
-                .map(this::createCommentResponse)
-                .collect(Collectors.toList());
+            .map(this::createCommentResponse)
+            .collect(Collectors.toList());
     }
 }
