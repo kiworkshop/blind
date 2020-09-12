@@ -6,6 +6,24 @@ Content-Type: application/json
   "email": "harris",
   "password": "1234"
 }
+###
+POST localhost:8080/users
+Content-Type: application/json
+
+{
+"email": "admin",
+"password": "1234"
+}
+###
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+"email": "harris",
+"password": "1234"
+}
+###
+POST http://localhost:8080/logout
 
 ###
 GET localhost:8080/users?page=1&size=2

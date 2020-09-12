@@ -1,19 +1,28 @@
 package org.kiworkshop.blind.user.controller;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import javax.validation.Valid;
+
 import org.kiworkshop.blind.user.controller.dto.UserPageRequest;
 import org.kiworkshop.blind.user.controller.dto.UserRequestDto;
 import org.kiworkshop.blind.user.controller.dto.UserResponseDto;
+import org.kiworkshop.blind.user.domain.Role.ROLES;
 import org.kiworkshop.blind.user.domain.User;
 import org.kiworkshop.blind.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,7 +33,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    @Secured(value = {"ADMIN",})
+    @Secured(ROLES.ADMIN)
     public Page<User> getUsers(UserPageRequest userPageRequest) {
         return userService.getUsers(userPageRequest.getPageable());
     }
@@ -35,13 +44,15 @@ public class UserController {
         return ResponseEntity.ok(id);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> getUserBy(@PathVariable Long id) {
-        UserResponseDto user = userService.readUserBy(id);
+    @GetMapping("/{username}")
+    @PreAuthorize("#username == authentication.principal.username or hasRole('ROLE_ADMIN')")
+    public ResponseEntity<UserResponseDto> getUserBy(@PathVariable String username) {
+        UserResponseDto user = userService.readUserBy(username);
         return ResponseEntity.ok(user);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("#id == authentication.principal.id or hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> updateUser(@PathVariable Long id,
                                            @RequestBody UserRequestDto userRequestDto) {
         userService.updateById(id, userRequestDto);
@@ -49,6 +60,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("#id == authentication.principal.id or hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
