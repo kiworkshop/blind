@@ -23,10 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 
-@ExtendWith(SpringExtension.class)
-@WebAppConfiguration
 @SpringBootTest
-@ContextConfiguration
 class UserControllerTest {
 
     @Autowired

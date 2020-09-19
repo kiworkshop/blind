@@ -5,17 +5,14 @@ import org.kiworkshop.blind.comment.controller.dto.CommentRequest;
 import org.kiworkshop.blind.comment.controller.dto.CommentResponse;
 import org.kiworkshop.blind.comment.domain.Comment;
 import org.kiworkshop.blind.comment.repository.CommentRepository;
-import org.kiworkshop.blind.comment.util.NameTagExtractor;
 import org.kiworkshop.blind.post.domain.Post;
+import org.kiworkshop.blind.post.service.PostService;
 import org.kiworkshop.blind.user.domain.User;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 
-import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,37 +23,33 @@ public class CommentService {
     private static final int COMMENT_SIZE = 5;
 
     private final CommentRepository commentRepository;
+    private final PostService postService;
 
-    public CommentResponse create(Post post, CommentRequest request) {
-        Comment comment = Comment.builder()
-            .content(request.getContent())
-            .post(post)
-            .build();
-
-        Comment saved = commentRepository.save(comment);
-        return createCommentResponse(saved);
+    @Transactional
+    public CommentResponse addComment(Long postId, CommentRequest request) {
+        Post post = postService.findById(postId);
+        Comment comment = post.addComment(request.getContent());
+        return CommentModelMapper.createCommentResponse(comment);
     }
 
-    public List<CommentResponse> getAll(Post post) {
+    public List<CommentResponse> getAllComments(Long postId) {
+        Post post = postService.findById(postId);
         return post.getComments().stream()
-            .map(this::createCommentResponse)
+            .map(CommentModelMapper::createCommentResponse)
             .collect(Collectors.toList());
     }
 
     @Transactional
-    public CommentResponse update(HttpSession httpSession, Long id, CommentRequest request) {
+    public CommentResponse update(Long id, CommentRequest request, UserDetails userDetails) {
         Comment comment = findCommentById(id);
-        validateCorrectUser(httpSession, comment);
-
+        validateOwner(comment, userDetails);
         comment.update(request.getContent());
-
-        return createCommentResponse(comment);
+        return CommentModelMapper.createCommentResponse(comment);
     }
 
-    public void delete(HttpSession httpSession, Long id) {
+    public void delete(Long id, UserDetails userDetails) {
         Comment comment = findCommentById(id);
-        validateCorrectUser(httpSession, comment);
-
+        validateOwner(comment, userDetails);
         commentRepository.delete(comment);
     }
 
@@ -65,37 +58,25 @@ public class CommentService {
             .orElseThrow(() -> new IllegalArgumentException("해당 id의 comment가 존재하지 않습니다. id=" + id));
     }
 
-    private void validateCorrectUser(HttpSession httpSession, Comment comment) {
-        User loginUser = (User) httpSession.getAttribute("LOGIN_USER");
+    private void validateOwner(Comment comment, UserDetails userDetails) {
         User author = comment.getCreatedBy();
-        if (!(author.getId().equals(loginUser.getId()))) throw new IllegalArgumentException("사용자 권한이 없습니다.");
-    }
-
-    private CommentResponse createCommentResponse(Comment comment) {
-        List<String> nameTags = NameTagExtractor.extractNameTags(comment.getContent());
-
-        return CommentResponse.builder()
-                .id(comment.getId())
-                .content(comment.getContent())
-                .nameTags(nameTags)
-                .authorName(comment.getCreatedBy().getName())
-                .postId(comment.getPost().getId())
-                .createdAt(comment.getCreatedDate())
-                .lastUpdatedAt(comment.getLastModifiedDate())
-                .build();
+        if (!author.matchEmail(userDetails.getUsername())) {
+            throw new IllegalArgumentException("사용자 권한이 없습니다.");
+        }
     }
 
     public List<CommentResponse> getTopNComments(Post post) {
         List<Comment> comments = commentRepository.findAllByPostOrderById(post, PageRequest.of(0, COMMENT_SIZE));
         return comments.stream()
-            .map(this::createCommentResponse)
+            .map(CommentModelMapper::createCommentResponse)
             .collect(Collectors.toList());
     }
 
     public List<CommentResponse> getAfterIdComments(Post post, Long id) {
         List<Comment> comments = commentRepository.findAllByPostAndIdGreaterThan(post, id);
         return comments.stream()
-            .map(this::createCommentResponse)
+            .map(CommentModelMapper::createCommentResponse)
             .collect(Collectors.toList());
     }
+
 }

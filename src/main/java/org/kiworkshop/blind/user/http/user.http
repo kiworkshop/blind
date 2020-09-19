@@ -58,3 +58,4 @@ GET http://localhost:8080/posts/2
 GET http://localhost:8080/posts
 
 ###
+GET http://localhost:8080/securitytest

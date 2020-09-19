@@ -95,5 +95,9 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public boolean matchEmail(String email) {
+        return this.email.equals(email);
+    }
 }
 

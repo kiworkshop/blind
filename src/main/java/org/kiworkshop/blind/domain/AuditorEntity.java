@@ -1,6 +1,7 @@
 package org.kiworkshop.blind.domain;
 
 import lombok.Getter;
+import org.kiworkshop.blind.comment.domain.Comment;
 import org.kiworkshop.blind.user.domain.User;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -30,5 +31,13 @@ public abstract class AuditorEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @LastModifiedBy
     private User lastModifiedBy;
+
+    public boolean isCreatedBy(User user) {
+        return createdBy.getEmail().equals(user.getEmail());
+    }
+
+    public boolean isModifiedBy(User user) {
+        return lastModifiedBy.getEmail().equals(user.getEmail());
+    }
 }
 

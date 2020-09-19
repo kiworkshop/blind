@@ -8,8 +8,10 @@ import org.kiworkshop.blind.post.controller.dto.request.PostRequestDto;
 import org.kiworkshop.blind.post.controller.dto.response.PostResponseDto;
 import org.kiworkshop.blind.post.domain.Post;
 import org.kiworkshop.blind.post.service.PostService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -24,14 +26,15 @@ public class PostController {
     private final CommentService commentService;
 
     @GetMapping
-    public ResponseEntity<List<PostResponseDto>> getAll() {
-        return ResponseEntity.ok(postService.readAll());
+    public Page<PostResponseDto> getAll(PostPageRequest postPageRequest) {
+        PageRequest pageRequest = PageRequest.of(postPageRequest.getPage(), postPageRequest.getSize());
+        return postService.getPagable(pageRequest);
     }
 
     @PostMapping
-    public ResponseEntity<Long> createPost(HttpSession httpSession, @RequestBody PostRequestDto postRequestDto) {
-        Long id = postService.createPost(httpSession, postRequestDto);
-        return ResponseEntity.ok(id);
+    @ResponseStatus(code = HttpStatus.CREATED)
+    public Long createPost(@RequestBody PostRequestDto postRequestDto) {
+        return postService.createPost(postRequestDto);
     }
 
     @PostMapping("/{id}")
@@ -42,7 +45,7 @@ public class PostController {
 
     @GetMapping("/{id}")
     public ResponseEntity<PostResponseDto> getPostById(@PathVariable Long id) {
-        PostResponseDto post = postService.readPost(id);
+        PostResponseDto post = postService.getBy(id);
         return ResponseEntity.ok(post);
     }
 
@@ -61,14 +64,12 @@ public class PostController {
 
     @PostMapping("/{id}/comments/add")
     public CommentResponse addComment(@PathVariable Long id, @RequestBody CommentRequest request) {
-        Post post = postService.findById(id);
-        return commentService.create(post, request);
+        return commentService.addComment(id, request);
     }
 
     @GetMapping("/{id}/comments/all")
     public List<CommentResponse> getAllComments(@PathVariable Long id) {
-        Post post = postService.findById(id);
-        return commentService.getAll(post);
+        return commentService.getAllComments(id);
     }
 
     @GetMapping("/{id}/comments/partial")

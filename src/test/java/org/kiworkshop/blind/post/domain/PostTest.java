@@ -13,6 +13,8 @@ public class PostTest {
             .content("content")
             .build();
         ReflectionTestUtils.setField(post, "id", 1L);
+        ReflectionTestUtils.setField(post, "createdBy", user);
+        ReflectionTestUtils.setField(post, "lastModifiedBy", user);
         return post;
     }
 }

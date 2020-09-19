@@ -8,8 +8,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 
 @Configuration
 @EnableWebSecurity
@@ -34,23 +37,27 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        http.sessionManagement().maximumSessions(-1).sessionRegistry(sessionRegistry());
+        http.sessionManagement().sessionFixation().migrateSession()
+            .sessionAuthenticationStrategy(registerSessionAuthStr());
+
         http
             .csrf().disable()
             .exceptionHandling()
-                .authenticationEntryPoint(restAuthenticationEntryPoint)
-                .and()
+            .authenticationEntryPoint(restAuthenticationEntryPoint)
+            .and()
             .formLogin()
-                .disable()
+            .disable()
             .logout()
-                .logoutUrl("/logout")
-                .logoutSuccessHandler(logoutSuccessHandler)
-                .invalidateHttpSession(true)
-                .and()
+            .logoutUrl("/logout")
+            .logoutSuccessHandler(logoutSuccessHandler)
+            .invalidateHttpSession(true)
+            .and()
             .authorizeRequests()
-                .antMatchers("/admin**").hasRole("ADMIN")
-                .antMatchers("/posts/**").authenticated()
-                .antMatchers("/home").authenticated()
-                .and()
+            .antMatchers("/admin**").hasRole("ADMIN")
+            .antMatchers("/posts/**").authenticated()
+            .antMatchers("/home").authenticated()
+            .and()
             .addFilterAt(getAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
@@ -63,6 +70,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             authFilter.setAuthenticationManager(this.authenticationManagerBean());
             authFilter.setAuthenticationSuccessHandler(restLoginSuccessHandler);
             authFilter.setAuthenticationFailureHandler(restLoginFailureHandler);
+            authFilter.setSessionAuthenticationStrategy(registerSessionAuthStr());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -72,5 +80,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        SessionRegistry sessionRegistry = new SessionRegistryImpl();
+        return sessionRegistry;
+    }
+
+    @Bean
+    public RegisterSessionAuthenticationStrategy registerSessionAuthStr() {
+        return new RegisterSessionAuthenticationStrategy(sessionRegistry());
     }
 }

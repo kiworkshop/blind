@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    List<Comment> findAllByPostOrderById(Post postId, Pageable pageable);
+    List<Comment> findAllByPostOrderById(Post post, Pageable pageable);
 
     List<Comment> findAllByPostAndIdGreaterThan(Post post, Long id);
 }

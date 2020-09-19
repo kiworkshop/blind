@@ -6,6 +6,8 @@ import org.kiworkshop.blind.user.domain.User;
 import org.kiworkshop.blind.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final SessionRegistry sessionRegistry;
 
     public Page<User> getUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
@@ -45,6 +48,20 @@ public class UserService implements UserDetailsService {
 
     public void deleteById(Long id) {
         userRepository.deleteById(id);
+        doDeletedUserPostProcess(id);
+    }
+
+    private void doDeletedUserPostProcess(Long id) {
+        expireSession(id);
+    }
+
+    private void expireSession(Long id) {
+        User user = (User) sessionRegistry.getAllPrincipals().stream()
+            .filter(principal -> ((User) principal).getId() == id)
+            .findFirst()
+            .orElseThrow(RuntimeException::new);
+        sessionRegistry.getAllSessions(user, false)
+            .forEach(SessionInformation::expireNow);
     }
 
     User findById(Long id) {

@@ -59,5 +59,14 @@ public class Post extends AuditorEntity {
         }
         return title.substring(0, 10);
     }
+
+    public Comment addComment(String content) {
+        Comment comment = Comment.builder()
+            .content(content)
+            .post(this)
+            .build();
+        comments.add(comment);
+        return comment;
+    }
 }
 

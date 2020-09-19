@@ -4,7 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kiworkshop.blind.comment.controller.dto.CommentResponse;
 import org.kiworkshop.blind.comment.domain.Comment;
-import org.kiworkshop.blind.comment.util.NameTagExtractor;
+import org.kiworkshop.blind.comment.service.CommentModelMapper;
+import org.kiworkshop.blind.comment.service.CommentService;
 import org.kiworkshop.blind.like.LikeAction;
 import org.kiworkshop.blind.like.LikeResponse;
 import org.kiworkshop.blind.post.controller.dto.request.PostRequestDto;
@@ -12,6 +13,8 @@ import org.kiworkshop.blind.post.controller.dto.response.PostResponseDto;
 import org.kiworkshop.blind.post.domain.Post;
 import org.kiworkshop.blind.post.repository.PostRepository;
 import org.kiworkshop.blind.user.domain.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,19 +29,18 @@ public class PostService {
 
     private final PostRepository postRepository;
 
-    public Long createPost(HttpSession session, PostRequestDto postRequestDto) {
+    public Long createPost(PostRequestDto postRequestDto) {
         Post post = postRequestDto.toEntity();
         return postRepository.save(post).getId();
     }
 
-    public List<PostResponseDto> readAll() {
-        return postRepository.findAll().stream()
-            .map(this::getPostResponseDto)
-            .collect(Collectors.toList());
+    public Page<PostResponseDto> getPagable(Pageable pageable) {
+        return postRepository.findAll(pageable)
+            .map(this::getPostResponseDto);
     }
 
     @Transactional(readOnly = true)
-    public PostResponseDto readPost(Long id) {
+    public PostResponseDto getBy(Long id) {
         Post post = findById(id);
         return getPostResponseDto(post);
     }
@@ -66,22 +68,8 @@ public class PostService {
 
     private List<CommentResponse> createCommentResponseList(List<Comment> comments) {
         return comments.stream()
-            .map(this::createCommentResponse)
+            .map(CommentModelMapper::createCommentResponse)
             .collect(Collectors.toList());
-    }
-
-    private CommentResponse createCommentResponse(Comment comment) {
-        List<String> nameTags = NameTagExtractor.extractNameTags(comment.getContent());
-
-        return CommentResponse.builder()
-            .id(comment.getId())
-            .content(comment.getContent())
-            .nameTags(nameTags)
-            .authorName(comment.getCreatedBy().getName())
-            .postId(comment.getPost().getId())
-            .createdAt(comment.getCreatedDate())
-            .lastUpdatedAt(comment.getLastModifiedDate())
-            .build();
     }
 
     private LikeResponse createLikeResponse(List<LikeAction> likes) {

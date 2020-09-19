@@ -11,6 +11,8 @@ import org.kiworkshop.blind.user.repository.UserRepository;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,15 +24,17 @@ import static org.mockito.BDDMockito.then;
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
-
     private UserService userService;
 
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private SessionRegistry sessionRegistry;
+
     @BeforeEach
     void setUp() {
-        userService = new UserService(userRepository);
+        userService = new UserService(userRepository, sessionRegistry);
     }
 
     @Test
@@ -48,11 +52,11 @@ class UserServiceTest {
         assertThat(id).isEqualTo(1L);
     }
 
-    private UserRequestDto getUserRequestDtoFixture(){
+    private UserRequestDto getUserRequestDtoFixture() {
         return UserRequestDto.builder().email("harris").password("1234").build();
     }
 
-    private User getUserFixture(){
+    private User getUserFixture() {
         User user = getUserRequestDtoFixture().toEntity();
         ReflectionTestUtils.setField(user, "id", 1L);
         return user;

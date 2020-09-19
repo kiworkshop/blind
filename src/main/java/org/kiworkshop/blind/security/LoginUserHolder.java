@@ -1,14 +1,16 @@
 package org.kiworkshop.blind.security;
 
-import org.kiworkshop.blind.user.domain.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
+@Component
 public class LoginUserHolder {
-    public static User get() {
+    public UserDetails get() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            return (User) authentication.getPrincipal();
+            return (UserDetails) authentication.getPrincipal();
         } catch (Exception e) {
             throw new UnAuthenticationException(e);
         }
